@@ -8,7 +8,7 @@ description: >
   Carl Douglas's personal website
 
 baseurl: ""
-url: "http://carld.github.io"
+url: "https://carld.github.io"
 username: carld
 
 # Build settings

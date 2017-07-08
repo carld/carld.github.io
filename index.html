@@ -3,9 +3,6 @@ layout: default
 ---
 
 <div class="home">
-
-  <h1>Blogs and Musings</h1>
-
   <table class="posts">
     <tbody>
       {% for post in site.posts %}
@@ -16,7 +13,7 @@ layout: default
           </a>
         </td>
         <td>
-          {{ post.date | date: "%b %-d, %Y" }}
+          {{ post.date | date: "%Y-%M-%d" }}
         </td>
       </tr>
       {% endfor %}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  {% include head.html %}
+
+  <body>
+
+    <div class="wrapper">
+      {% include header.html %}
+      <section>
+
+        <h1>{{ page.title }}</h1>
+
+        <p class="post-meta">
+          <time datetime="{{ page.date | date_to_xmlschema }}">
+            {{ page.date | date: "%b %-d, %Y" }}
+          </time>
+
+        <article>
+          {{ content }}
+        </article>
+
+      </section>
+      {% include footer.html %}
+      {% include track.ext %}
+  </body>
+</html>

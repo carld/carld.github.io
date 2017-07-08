@@ -1,0 +1,15 @@
+# Welcome to Jekyll!
+
+# Site settings
+title: Carl Douglas
+email: carl.douglas@gmail.com
+
+description: >
+  Carl Douglas's personal website
+
+baseurl: ""
+url: "http://carld.github.io"
+username: carld
+
+# Build settings
+markdown: kramdown

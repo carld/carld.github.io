@@ -1,0 +1,25 @@
+---
+layout: default
+---
+
+<div class="home">
+
+  <h1>Blogs and Musings</h1>
+
+  <table class="posts">
+    <tbody>
+      {% for post in site.posts %}
+      <tr>
+        <td>
+          <a href="{{ post.url | prepend: site.baseurl }}">
+            {{post.title}}
+          </a>
+        </td>
+        <td>
+          {{ post.date | date: "%b %-d, %Y" }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,46 @@
+header img.me {
+    border-radius: 50%;
+    border: 1px solid #f2f3f3;
+    display: block;
+    margin: 10px auto 30px;
+    max-width: 140px;
+    padding: 5px;
+    transition: all 0.2s ease-in-out;
+}
+
+@media print, screen and (max-width: 480px) {
+    header li, header ul li + li + li {
+        width: auto;
+    }
+}
+
+header ul.icons {
+    list-style: none;
+    padding:0;
+    text-align: center;
+
+    li {
+        display: inline-block;
+        margin: 10px;
+
+        a {
+            color: gray;
+            font-size: 20px;
+        }
+    }
+}
+
+table.posts {
+    margin-top: 50px;
+
+    td {
+        border-bottom: 1px solid white;
+        padding-left: 0;
+
+        a {
+            color: gray;
+            font-size: 20px;
+        }
+    }
+
+}

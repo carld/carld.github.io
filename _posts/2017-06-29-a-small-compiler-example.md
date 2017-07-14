@@ -10,13 +10,13 @@ of computation.  Compilers enable us to express programs in a form more suitable
 an application. Compilers transform programs into forms that are more compatible with
 a particular machine.
 
-For example given a trivial [S-expression] to add two numbers:
+For example given a trivial S-expression to add two numbers:
 
 ```
 (+ 1 2)
 ```
 
-The objective is to generate code in [assembly] something like:
+The objective is to generate code in assembly something like:
 
 ```
 push DWORD 2
@@ -47,12 +47,12 @@ An initial naive attempt at the compile function:
     [(eq? '+ exp)    (emit "add eax, bax~%")]))
 ```
 
-The obvious thing wrong with the above is that + needs to generate code to
+The obvious thing wrong with the above is that `+` needs to generate code to
 handle its arguments. This means calling `compile` for them.
 
-Because on x86 the `add` instruction works with registers and we are pushing
+Because on x86 the `add` instruction works with registers and we push
 arguments on to the stack, we must pop the arguments from the stack and then
-load them into `eax` and `ebx` in prepartion for `add` to do its work.
+load them into `eax` and `ebx` in preparation for `add` to do its work.
 
 ```
 (define (compile exp)
@@ -99,7 +99,7 @@ This is good news, however we've glossed over a detail: Nasm has not generated b
 We need to tell Nasm to generate code that the linker can work with.
 The linker is a program that knows how to prepare binary code so it can be loaded into memory as managed by the OS.
 
-_In this example we tell Nasm the format is Mach-O which is the format used by OSX. Mach is the name of the kernel on OSX (and BSD), and O means object_
+_In this example we tell Nasm the format is Mach-O which is the format used by OSX. Mach is the name of the kernel on OSX (and BSD)_
 
 ```
 $ nasm -f macho c.s
@@ -117,7 +117,8 @@ Undefined symbols for architecture i386:
 ld: symbol(s) not found for inferred architecture i386
 ```
 
-The linker looks for a symbol called `start` (the equivalent to `main` in a C program). This is where the OS starts running the program from.
+The linker looks for a symbol called `start` (a bit like `main` in a C program).
+This is where the OS starts running the program from.
 
 Here we need to implement a symbol `start` in our object code.
 This only needs to happen once, so we'll add a `compile-top` function that
@@ -169,15 +170,17 @@ $ ./a.out
 zsh: segmentation fault  ./a.out
 ```
 
-But when we run it has a fault.
+But when we run it, there's a fault.
 
 The problem is the OS runs our code, which doesn't exit. Beyond our code is memory
-which doesn't belong to our process and so the OS generates a fault.
+which doesn't belong to our process and so the OS generates a fault when
+it looks for the next instruction to run.
 
 The fix is to generate code that exits cleanly.
 
-On our OS the operating system call is number 1. If we call an interrupt
-with 1 in the eax register, the operating system handles the interrupt and
+On our OS the operating system call for a process to exit is represented by number 1.
+If we call an interrupt with 1 in the eax register,
+the operating system handles the interrupt and
 ends the process normally. Lets add that after our code is generated in `compile-top`:
 
 ```
@@ -250,3 +253,28 @@ I'm sure you'll agree that the exit code of 170 was no accident!
 Extending this compiler now is a matter of refactoring the `compile` function
 to support more operators, and potentially also implementing storage for local variables
 in the input expressions (hint: we can use the stack for this and remember the position/index on the stack).
+
+There are a couple of points to take out of this:
+
+1. S-expressions, and languages like Scheme that manipulate them, are great
+for experimenting with compilers because they can be used to represent tree
+structures. Much effort in writer a compiler involves parsing the syntax
+of an input language into a tree structure known as an Abstract Syntax Tree.
+In the example above parsing is not necessary because S-expressions and Scheme
+is used.
+
+2. When writing compilers we can gain a good understanding of the
+computational model used by the input and target language.
+In the case of assembly, some of the key knowledge is that there
+is a stack and registers and the instructions
+work on them.
+In scheme key knowledge is that expressions evaluate recursively.
+The input program program must be translated so that the
+functions described in the input are equivalently expressed as functions
+(perhaps composed of many sub functions) in the target language.
+
+The big idea for me in a compiler is that they are not so much about syntax,
+but about translating between computational models.
+
+_I wonder if there are computational models out there in nature that we may not
+recognize as computation due to our own limits of perception._

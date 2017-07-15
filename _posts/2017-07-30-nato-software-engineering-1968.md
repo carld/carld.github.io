@@ -2,14 +2,10 @@
 In 1968 (and 1969) there was a conference held to discuss how software should be developed.
 It has been referred to as the NATO Software Engineering Conference.
 
-I discovered the conference documents online while searching for some of the early ideas  
-on software engineering. My motivation was partly out of historical curiosity and partly
-through a sense of history repeating itself.
-Learning LISP - after years of C, Java, Ruby and others - had made me wonder
-just how far programming languages have really come in 50 years.
+I discovered the conference documents online while searching for some of the early ideas on software engineering. My motivation was partly out of historical curiosity and partly through a sense of history repeating itself.
+Learning LISP - after years of C, Java, Ruby and others - had made me wonder just how far programming has really come in 50 years.
 
-I really enjoyed reading over these documents and I think many curious programmers
-would too.
+I really enjoyed reading over these documents and I think many curious programmers would too.
 
 One of the motivations behind the conference appeared to be alarm at the rate of growth in the software industry:
 
@@ -35,9 +31,7 @@ the laboratory. In my terms design consists of:
 4. Write some more code and iterate to what you feel is the correct solution.
 ```
 
-I think the reason for my surprise was the sudden realization that even though
-the computers back then looked big and
-clunky, the human minds behind them were by no means clunky.
+I think the reason for my surprise was the sudden realization that even though the computers back then look big and clunky by today's standards, the human minds behind them were by no means clunky.
 They had a level of insight as good as any we have today.
 
 Finally this quote from Paul:

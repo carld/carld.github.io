@@ -1,13 +1,9 @@
-    Title: A small compiler example
-    Date: 2017-06-29T13:39:44
-    Tags: DRAFT
-    Authors: Carl
 
 _Objective: Implement a compiler that takes as input simple S-expressions and outputs x86 assembly_
 
 A compiler takes a description of a computation and translates it typically to a lower level
 of computation.  Compilers enable us to express programs in a form more suitable to
-an application. Compilers transform programs into forms that are more compatible with
+a programmer. Compilers transform programs into forms that are more compatible with
 a particular machine.
 
 For example given a trivial S-expression to add two numbers:
@@ -19,24 +15,35 @@ For example given a trivial S-expression to add two numbers:
 The objective is to generate code in assembly something like:
 
 ```
-push DWORD 2
-push DWORD 1
-mov ebx, [esp+4]
-mov eax, [esp]
-add esp, 8
-add eax, ebx
-push eax
+push 2             ; push the number 2 onto the stack
+push 1             ; push the number 1 onto the stack
+pop ebx            ; pop an argument from the stack into the ebx register
+pop eax            ; pop an argument from the stack into the eax register
+add eax, ebx       ; add the contents of the ebx register to the eax register
+push eax           ; push the contents of the eax register onto the stack
 ```
 
 The above two programs are trying to do the same thing, add the numbers 1 and 2,
 yet they look very different.
 
-One of the things that the upper program is not saying is how anything is to be
+One of the things that the former program is not saying is how anything is to be
 stored in the machine.  The assembly program explicitly pushes two numbers
 onto a stack, and then moves numbers from the stack into registers.
 
 The approach I'm familiar with is to evaluate the S-expression
 recursively, emitting assembly for each sub expression.
+Because the compilation function can call itself recursively, and the `add`
+instruction takes two operands we push the operands onto a stack.
+We use a stack so that the compile function can emit assembly code for a
+program that performs the equivalent of nested S-expressions,
+without having to know which register to store the current result in.
+If we tried to push arguments directly into registers, there would have to be a way to
+indicate which register to use, complicating things.
+Because it is the `add` instruction that cares about where it's operands come from
+we set the operands in registers when compiling add.
+The stack is used as general purpose storage for any and all results evaluated at runtime.
+This is partly the effect of x86 instructions which operate on registers
+and not the stack. On other architectures, `add` will add the top two numbers on the stack.
 
 An initial naive attempt at the compile function:
 
@@ -44,7 +51,7 @@ An initial naive attempt at the compile function:
 (define (compile exp)
   (cond
     [(fixnum? exp)   (emit "push ~a~%" exp)]
-    [(eq? '+ exp)    (emit "add eax, bax~%")]))
+    [(eq? '+ exp)    (emit "add eax, ebx~%")]))
 ```
 
 The obvious thing wrong with the above is that `+` needs to generate code to
@@ -85,6 +92,8 @@ $ chez --script c.scm > c.s
 $ cat c.s
 push 1
 push 2
+pop eax
+pop ebx
 add eax, ebx
 $ nasm c.s
 $ hexdump c
@@ -249,6 +258,96 @@ $ echo $?
 ```
 
 I'm sure you'll agree that the exit code of 170 was no accident!
+
+And finally lets try a nested expression, to prove that `compile` is
+recursing and generating correct assembly.
+
+```
+(compile-top '(+ (+ 21 21) (+ 64 64)))
+```
+
+_On a first attempt it looks like somethings wrong - we didn't get 170.
+The bug in the program is around the Mach-O special treatment of growing the stack.
+That only needs to happen once before the exit, not per every addition._
+
+We should expect the result of adding 21 and 21 to be pushed on the stack,
+as well as the result of adding 64 and 64.
+And then those top two results in the stack being added.
+
+```
+$ chez --script c.scm > c.s
+$ cat c.s
+global start
+start:
+push 21
+push 21
+pop eax
+pop ebx
+add eax, ebx
+push eax
+push 64
+push 64
+pop eax
+pop ebx
+add eax, ebx
+push eax
+pop eax
+pop ebx
+add eax, ebx
+push eax
+sub esp, 4
+mov eax, 0x1
+int 0x80
+$ nasm c.s
+$ ld c.o
+$ ./a.out
+$ echo $?
+192
+```
+
+The entire compiler now looks like:
+
+```
+(define emit printf)
+
+(define (compile exp)
+  (cond
+    [(fixnum? exp)   (emit "push ~a~%" exp)]
+    [(eq? '+ (car exp))    (begin
+                              (compile (cadr exp))
+                              (compile (caddr exp))
+                              (emit "pop eax~%")
+                              (emit "pop ebx~%")
+                              (emit "add eax, ebx~%")
+                              (emit "push eax~%"))]))
+
+(define (compile-top exp)
+  (emit "global start~%")
+  (emit "start:~%")
+  (compile exp)
+  (emit "sub esp, 4~%") ; Mach-O special
+  (emit "mov eax, 0x1~%")
+  (emit "int 0x80~%"))
+
+;(compile-top '(+ 1 2))
+(compile-top '(+ (+ 21 21) (+ 64 64)))
+```
+
+The shell script for automating the build process looks like:
+
+```
+chez --script c.scm > c.s
+nasm -f macho c.s
+ld c.o
+./a.out
+echo $?
+```
+
+You can find the compiler here:
+[https://gist.github.com/carld/4e0a51385bd7180226a9f9e59b4e7687](https://gist.github.com/carld/4e0a51385bd7180226a9f9e59b4e7687)
+
+And the build script, here:
+[https://gist.github.com/carld/3bcaabb9738c4b2b7c4ff00bb2ed3eba](https://gist.github.com/carld/3bcaabb9738c4b2b7c4ff00bb2ed3eba)
 
 Extending this compiler now is a matter of refactoring the `compile` function
 to support more operators, and potentially also implementing storage for local variables

@@ -87,7 +87,7 @@ If the lookahead character is not a parenthesis, it's assumed to belong to a sym
 Above contains a curiosity that can be found in many language implementations. Remember from the `List` structure that the `data` pointer can be either a `char *` a symbol, or `List *` another List.
 The way we are indicating the type of pointer is by setting the lowest bit on the pointer on.
 For example, given a pointer to the address `0x100200230`, if it's a pair we'll modify that pointer with a bitwise or with 1 so the address becomes `0x100200231`.
-The questionable thing about modifying a pointer in this way is how can we tell a pointer tagged with 1, from a regular untagged address. Well, partly as a performance optimization, many computers and their Operating Systems, allocate memory on set boundaries. It's referred to as memory alignment, and if for example the alignment is to an 8-bit boundary, it means that when memory is allocated it's address will be a multiple of 8. For example the next 8 bit boundary for the address `0x100200230` is `0x100200238`. Memory could be aligned to 16-bits, 32-bits as well. Typically it will be aligned on machine word, which means 32-bits if you have a 32-bit CPU and bus. A more thorough discussion is on wikipedia https://en.wikipedia.org/wiki/Data_structure_alignment.
+The questionable thing about modifying a pointer in this way is how can we tell a pointer tagged with 1, from a regular untagged address. Well, partly as a performance optimization, many computers and their Operating Systems, allocate memory on set boundaries. It's referred to as memory alignment, and if for example the alignment is to an 8-bit boundary, it means that when memory is allocated it's address will be a multiple of 8. For example the next 8 bit boundary for the address `0x100200230` is `0x100200238`. Memory could be aligned to 16-bits, 32-bits as well. Typically it will be aligned on machine word, which means 32-bits if you have a 32-bit CPU and bus. A more thorough discussion is on wikipedia [https://en.wikipedia.org/wiki/Data_structure_alignment].
 Effectively for us it means that whenever we call `calloc` we'll always get back an address where the lowest bit is off (0), so we can set it on if we want.
 The macro `is_pair` returns non-zero if the address is a pair (which means we'll need to unset the lowest bit to get the address). It uses a bitwise and with 1 to determine this. The `untag` macro switches the lowest bit off, with a bitwise and of the ones complement of 1. The `tag` macro switches the lowest bit on with a bitwise or of 1.
 ```c
@@ -110,7 +110,7 @@ List * cons(void *_car, void *_cdr) {
   return (List*) tag(_pair);
 }
 ```
-Another fundamental Lisp/Scheme operation is `cons`. It constructs a pair, which means a pair of pointers, in this implementation the `List` structure that holds the `data` pointer and the `next` pointer. https://en.wikipedia.org/wiki/Cons
+Another fundamental Lisp/Scheme operation is `cons`. It constructs a pair, which means a pair of pointers, in this implementation the `List` structure that holds the `data` pointer and the `next` pointer. [https://en.wikipedia.org/wiki/Cons]
 Because pointers to a `List` (a pair) must be tagged using the lowest bit, we rely on `calloc` to provide memory large enough to hold the `List` data structure and that the memory is aligned to an address that does not involve the lowest bit.
 The `cons` function here takes two arguments, the first is an address that will be stored in the `data` field, and the second an address that will be stored in the `next` field.
 Finally the address where the `List` structure is stored is returned, after being tagged as a special kind of pointer.
@@ -129,7 +129,7 @@ void *intern(char *sym) {
 ```
 Here's where a symbol is retreived from the global list of symbols, or added if it is not found. It takes a single string argument. It uses `strncmp` to determine if anyone of the symbols are equivalent to the string passed in.
 If we get to the end of the list of symbols and didnt find a match. The symbol is duplicated with `strdup` and added to the head of the list. This is the effect of `cons` when given an existing list as the second parameter: a new symbol is pushed onto the list, and a new list head is constructed.
-The reason `strdup` is used, and the string is duplicated, is because we want a more permanent copy of the string. When the program runs, the `sym` parameter could be a pointer to the `token` global variable which will be modified as symbols are read from the input stream. The function is called `intern` out of convention, see https://en.wikipedia.org/wiki/String_interning for more background on string interning.
+The reason `strdup` is used, and the string is duplicated, is because we want a more permanent copy of the string. When the program runs, the `sym` parameter could be a pointer to the `token` global variable which will be modified as symbols are read from the input stream. The function is called `intern` out of convention, see [https://en.wikipedia.org/wiki/String_interning] for more background on string interning.
 
 ```c
 List * getlist();
@@ -161,8 +161,8 @@ Otherwise the token is probably a symbol, so call `getobj` and intern that symbo
 Take note that the variable `tmp` - an abbreviation of temporary - and explicity assigned to the return value of `getobj` before the `cons`. This is to ensure that the list is constructed in the correct order from head towards tail. Before the `cons` function is called, it's arguments are evaluated, and in this case it's second argument is a function call to `getlist`. So `getlist` is called again before `cons` is called, and either the end of the list (right parens) is discovered, or the next item in the list is.
 How this recursive function call works is worthwhile understanding. In C, when functions are called, the arguments to the function, and the variables in the function are pushed on top of a data structure called a stack. A stack is literally a stack of things, like a stack of plates, where the last thing on top is the first thing that will come off. The arguments and variables to the function come off the stack when the function returns, literally where you see `return` in the code.
 With every call to the `getlist` function as it comes across items in the list it is processing, the stack grows with another set of variables needed by `getlist`. So 3 recursive calls to `getlist` means the stack grows by 3 times the `getlist` functions storage requirements.
-The inefficiency here is the longer the list, the taller the stack. Some programming languages have a stack overflow error where the stack has out grown the available memory. Wikipedia has a page about this https://en.wikipedia.org/wiki/Stack_overflow
-Programming languages like Scheme implement something called tail call optimization where the language can determine if the variables used by a recursive function call will be needed after it returns and if not, it does not grow the stack.  This is a pretty cool feature of a programming language and it would be great to have in this language, and maybe we can add it later on. For more on tail calls, https://en.wikipedia.org/wiki/Tail_call
+The inefficiency here is the longer the list, the taller the stack. Some programming languages have a stack overflow error where the stack has out grown the available memory. Wikipedia has a page about this [https://en.wikipedia.org/wiki/Stack_overflow]
+Programming languages like Scheme implement something called tail call optimization where the language can determine if the variables used by a recursive function call will be needed after it returns and if not, it does not grow the stack.  This is a pretty cool feature of a programming language and it would be great to have in this language, and maybe we can add it later on. For more on tail calls, [https://en.wikipedia.org/wiki/Tail_call]
 
 ```c
 void print_obj(List *ob, int head_of_list) {
@@ -287,8 +287,8 @@ If the first symbol did not match any of the prior if statements, we assume a th
 The remaining block is the `else` which meant the first argument in the expression was a pair - eval was called with a list nested inside a list, i.e. `((x y z))`, and the only form of nested expression handled, is lambda, e.g. `((lambda (arg) (body expr ...)) value )`.
 In this case the names of the arguments in the lambda definition are bound to the corresponding values, and the name value pairs are pushed onto the head of the environment, until there are no more arguments (names) left to bind. The body of the lambda is then evaluated with the  extended environment.
 
-A newer article describing eval is called "The Roots of Lisp" by Paul Graham, and can be downloaded from http://www.paulgraham.com/rootsoflisp.html
-A thorough explanation can be found in "Structure and Interpretation of Computer Programs", by Harold Ableson and Gerald Jay Sussman. This book can be found online: "https://mitpress.mit.edu/sicp/full-text/book/book-Z-H-26.html#%_sec_4.1"
+A newer article describing eval is called "The Roots of Lisp" by Paul Graham, and can be downloaded from [http://www.paulgraham.com/rootsoflisp.html]
+A thorough explanation can be found in "Structure and Interpretation of Computer Programs", by Harold Ableson and Gerald Jay Sussman. This book can be found online: [https://mitpress.mit.edu/sicp/full-text/book/book-Z-H-26.html#%_sec_4.1]
 The earliest implementation of eval I have found is in the Lisp 1.5 Programmers Manual.
 
 ```c
@@ -318,7 +318,7 @@ That is it a very small and incomplete interpreter... Noticeably there is no gar
 
 Despite the limitations, this interpreter provides enough primitive functions to implement an equivalent eval on itself.
 
-The complete source code and some tests can be found at https://github.com/carld/micro-lisp
+The complete source code and some tests can be found at [https://github.com/carld/micro-lisp]
 
 An implementaion of eval that runs on the interpreter above can be found in `repl.lisp`. It implements a Read Eval Print Loop and it can be run using:
 

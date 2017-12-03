@@ -87,7 +87,8 @@ If the lookahead character is not a parenthesis, it's assumed to belong to a sym
 Above contains a curiosity that can be found in many language implementations. Remember from the `List` structure that the `data` pointer can be either a `char *` a symbol, or `List *` another List.
 The way we are indicating the type of pointer is by setting the lowest bit on the pointer on.
 For example, given a pointer to the address `0x100200230`, if it's a pair we'll modify that pointer with a bitwise or with 1 so the address becomes `0x100200231`.
-The questionable thing about modifying a pointer in this way is how can we tell a pointer tagged with 1, from a regular untagged address. Well, partly as a performance optimization, many computers and their Operating Systems, allocate memory on set boundaries. It's referred to as memory alignment, and if for example the alignment is to an 8-bit boundary, it means that when memory is allocated it's address will be a multiple of 8. For example the next 8 bit boundary for the address `0x100200230` is `0x100200238`. Memory could be aligned to 16-bits, 32-bits as well. Typically it will be aligned on machine word, which means 32-bits if you have a 32-bit CPU and bus. A more thorough discussion is on wikipedia [https://en.wikipedia.org/wiki/Data_structure_alignment](https://en.wikipedia.org/wiki/Data_structure_alignment).
+The questionable thing about modifying a pointer in this way is how can we tell a pointer tagged with 1, from a regular untagged address. Well, partly as a performance optimization, many computers and their Operating Systems, allocate memory on set boundaries. It's referred to as memory alignment, and if for example the alignment is to an 8-byte (64 bit) boundary, it means that when memory is allocated it's address will be a multiple of 8. For example the next 8 byte boundary for the address `0x100200230` is `0x100200238`. Memory could be aligned to 16-bits (2 bytes), 32-bits (4 bytes) as well. Typically it will be aligned on machine word, which means 32-bits if you have a 32-bit CPU and bus. [Thanks to mtnygard for pointing out that I'd mixed bits and bytes previously].
+A more thorough discussion is on wikipedia [https://en.wikipedia.org/wiki/Data_structure_alignment](https://en.wikipedia.org/wiki/Data_structure_alignment).
 Effectively for us it means that whenever we call `calloc` we'll always get back an address where the lowest bit is off (0), so we can set it on if we want.
 The macro `is_pair` returns non-zero if the address is a pair (which means we'll need to unset the lowest bit to get the address). It uses a bitwise and with 1 to determine this. The `untag` macro switches the lowest bit off, with a bitwise and of the ones complement of 1. The `tag` macro switches the lowest bit on with a bitwise or of 1.
 ```c
@@ -314,7 +315,7 @@ That is it a very small and incomplete interpreter... Noticeably there is no gar
 
 Despite the limitations, this interpreter provides enough primitive functions to implement an equivalent eval on itself.
 
-The complete source code and some tests can be found at [https://github.com/carld/micro-lisp](https://github.com/carld/micro-lisp)
+The complete source code and some tests can be found at [https://github.com/carld/micro-lisp](https://github.com/carld/micro-lisp) . Pull requests on github are welcome.
 
 An implementaion of eval that runs on the interpreter above can be found in `repl.lisp`. It implements a Read Eval Print Loop and it can be run using:
 
